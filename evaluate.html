@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>บันทึกการประเมิน — Puttinun</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page-shell">
+  <div class="top-nav">
+    <a href="index.html" class="nav-link">← หน้าปก</a>
+    <a href="archive.html" class="nav-link">← แฟ้มผลงาน</a>
+  </div>
+  <div class="archive-top">
+    <div>
+      <h2>บันทึกการประเมิน</h2>
+      <div class="sub">ให้เพื่อนช่วยประเมินแต่ละเว็บ — คะแนนและความเห็นเก็บไว้ในเบราว์เซอร์นี้</div>
+    </div>
+  </div>
+
+  <div class="tabs" id="evalTabs"></div>
+
+  <div class="eval-body">
+    <div>
+      <div class="eval-site-info">
+        <span id="evalSiteName">—</span>
+        <a id="evalSiteLink" href="#" target="_blank" rel="noopener">เปิดเว็บนี้ ↗</a>
+      </div>
+
+      <p class="eval-note">แบบประเมินนี้เก็บข้อมูลไว้ในเบราว์เซอร์ของแต่ละคนเท่านั้น (ไม่ได้รวมศูนย์ระหว่างเครื่อง) — ถ้าให้เพื่อนหลายคนประเมินแล้วอยากเห็นผลรวมกันจริงๆ ต้องส่งลิงก์เวอร์ชันที่เผยแพร่ผ่าน Claude หรือต่อกับฟอร์ม/ฐานข้อมูลกลางแทน</p>
+
+      <form id="evalForm">
+        <label class="field">
+          <span>ชื่อผู้ประเมิน (ไม่ระบุก็ได้)</span>
+          <input type="text" id="evalName" placeholder="เช่น เพื่อนในกลุ่ม Line" maxlength="40">
+        </label>
+
+        <div id="rubric"></div>
+
+        <label class="field">
+          <span>ความคิดเห็นเพิ่มเติม</span>
+          <textarea id="evalComment" rows="3" maxlength="300" placeholder="สิ่งที่ชอบ / สิ่งที่ควรปรับปรุง"></textarea>
+        </label>
+
+        <button type="submit" class="open-btn" id="evalSubmitBtn">ส่งแบบประเมิน</button>
+        <div class="eval-msg" id="evalMsg" aria-live="polite"></div>
+      </form>
+    </div>
+
+    <div class="results">
+      <div class="results-head">
+        <h3>ผลรวม (เครื่องนี้)</h3>
+        <span id="evalCount">0 คนประเมินแล้ว</span>
+      </div>
+      <div id="scoreRows"></div>
+      <div class="comment-list" id="commentList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var SITES = [
+    { id: 'ui01', code: 'UI-01', name: 'WokTheHack', url: 'https://kriangkri-code.github.io/WokTheHack/' },
+    { id: 'ui02', code: 'UI-02', name: 'Open House', url: 'https://kriangkri-code.github.io/openhouse/' },
+    { id: 'ui03', code: 'UI-03', name: 'A Collection of Design Websites', url: 'https://kriangkri-code.github.io/a-collection-of-design-websites/' },
+    { id: 'ui04', code: 'UI-04', name: 'Hotel Booking Webapp', url: 'https://kriangkri-code.github.io/Hotel-Booking-Webapp/' },
+    { id: 'ui05', code: 'UI-05', name: 'Galactic Defense', url: 'https://kriangkri-code.github.io/GALACTIC-DEFENSE/' }
+  ];
+  var CRITERIA = [
+    { key: 'ui', label: 'UI — หน้าตา/การออกแบบ' },
+    { key: 'ux', label: 'UX — ใช้งานง่ายแค่ไหน' },
+    { key: 'content', label: 'เนื้อหา / ความชัดเจน' },
+    { key: 'overall', label: 'ความประทับใจโดยรวม' }
+  ];
+  var STORAGE_KEY = 'field-archive-evaluations';
+
+  function readParam(name) {
+    var m = new RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+
+  function loadAll() {
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+  }
+  function saveAll(list) {
+    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); return true; }
+    catch (e) { return false; }
+  }
+
+  var requestedSite = readParam('site');
+  var currentSite = SITES.some(function (s) { return s.id === requestedSite; }) ? requestedSite : SITES[0].id;
+  var scores = {};
+
+  var tabsEl = document.getElementById('evalTabs');
+  SITES.forEach(function (site) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tab';
+    b.dataset.site = site.id;
+    b.textContent = site.code + ' · ' + site.name;
+    tabsEl.appendChild(b);
+  });
+  tabsEl.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('.tab') : null;
+    if (btn) selectSite(btn.dataset.site);
+  });
+
+  var rubricEl = document.getElementById('rubric');
+  CRITERIA.forEach(function (crit) {
+    var row = document.createElement('div');
+    row.className = 'rubric-row';
+    row.dataset.key = crit.key;
+
+    var label = document.createElement('span');
+    label.className = 'rubric-label';
+    label.textContent = crit.label;
+
+    var rating = document.createElement('div');
+    rating.className = 'rating';
+    rating.setAttribute('role', 'radiogroup');
+    rating.setAttribute('aria-label', crit.label);
+
+    for (var v = 1; v <= 5; v++) {
+      (function (val) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'rate-btn';
+        btn.dataset.val = val;
+        btn.textContent = val;
+        btn.setAttribute('aria-pressed', 'false');
+        btn.addEventListener('click', function () {
+          scores[crit.key] = val;
+          Array.prototype.forEach.call(rating.querySelectorAll('.rate-btn'), function (b2) {
+            var sel = Number(b2.dataset.val) === val;
+            b2.classList.toggle('selected', sel);
+            b2.setAttribute('aria-pressed', sel ? 'true' : 'false');
+          });
+        });
+        rating.appendChild(btn);
+      })(v);
+    }
+
+    row.appendChild(label);
+    row.appendChild(rating);
+    rubricEl.appendChild(row);
+  });
+
+  function resetFormFields() {
+    scores = {};
+    Array.prototype.forEach.call(document.querySelectorAll('.rate-btn'), function (b) {
+      b.classList.remove('selected');
+      b.setAttribute('aria-pressed', 'false');
+    });
+    document.getElementById('evalComment').value = '';
+    var msg = document.getElementById('evalMsg');
+    msg.textContent = '';
+    msg.classList.remove('error');
+  }
+
+  function selectSite(id) {
+    var site = SITES.filter(function (s) { return s.id === id; })[0] || SITES[0];
+    currentSite = site.id;
+    document.getElementById('evalSiteName').textContent = site.code + ' · ' + site.name;
+    document.getElementById('evalSiteLink').href = site.url;
+    Array.prototype.forEach.call(tabsEl.querySelectorAll('.tab'), function (t) {
+      t.classList.toggle('active', t.dataset.site === site.id);
+    });
+    resetFormFields();
+    var url = new URL(window.location.href);
+    url.searchParams.set('site', site.id);
+    window.history.replaceState(null, '', url);
+    renderResults();
+  }
+
+  function renderResults() {
+    var all = loadAll();
+    var docs = all.filter(function (d) { return d.site === currentSite; })
+                  .sort(function (a, b) { return b.createdAt - a.createdAt; });
+    document.getElementById('evalCount').textContent = docs.length + ' คนประเมินแล้ว';
+
+    var rowsEl = document.getElementById('scoreRows');
+    rowsEl.innerHTML = '';
+    CRITERIA.forEach(function (c) {
+      var vals = docs.map(function (d) { return Number(d[c.key]); }).filter(function (n) { return !isNaN(n) && n > 0; });
+      var avg = vals.length ? (vals.reduce(function (a, b) { return a + b; }, 0) / vals.length) : 0;
+      var row = document.createElement('div');
+      row.className = 'score-row';
+      var top = document.createElement('div');
+      top.className = 'score-row-top';
+      var s1 = document.createElement('span'); s1.textContent = c.label;
+      var s2 = document.createElement('span'); s2.textContent = vals.length ? (avg.toFixed(1) + ' / 5') : '—';
+      top.appendChild(s1); top.appendChild(s2);
+      var bar = document.createElement('div');
+      bar.className = 'score-bar';
+      var fill = document.createElement('i');
+      fill.style.width = ((avg / 5) * 100) + '%';
+      bar.appendChild(fill);
+      row.appendChild(top);
+      row.appendChild(bar);
+      rowsEl.appendChild(row);
+    });
+
+    var listEl = document.getElementById('commentList');
+    listEl.innerHTML = '';
+    var withComments = docs.filter(function (d) { return d.comment && String(d.comment).trim(); });
+    if (!withComments.length) {
+      var p0 = document.createElement('p');
+      p0.className = 'no-comments';
+      p0.textContent = 'ยังไม่มีความคิดเห็น';
+      listEl.appendChild(p0);
+    } else {
+      withComments.forEach(function (d) {
+        var item = document.createElement('div');
+        item.className = 'comment-item';
+        var who = document.createElement('div');
+        who.className = 'who';
+        who.textContent = d.name || 'ไม่ระบุชื่อ';
+        var p = document.createElement('p');
+        p.textContent = d.comment;
+        item.appendChild(who);
+        item.appendChild(p);
+        listEl.appendChild(item);
+      });
+    }
+  }
+
+  document.getElementById('evalForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var msg = document.getElementById('evalMsg');
+    var missing = CRITERIA.filter(function (c) { return !scores[c.key]; });
+    if (missing.length) {
+      msg.textContent = 'กรุณาให้คะแนนครบทุกหัวข้อก่อนส่ง';
+      msg.classList.add('error');
+      return;
+    }
+    var payload = {
+      site: currentSite,
+      name: (document.getElementById('evalName').value || '').trim().slice(0, 40) || 'ไม่ระบุชื่อ',
+      comment: (document.getElementById('evalComment').value || '').trim().slice(0, 300),
+      createdAt: Date.now()
+    };
+    CRITERIA.forEach(function (c) { payload[c.key] = scores[c.key]; });
+
+    var all = loadAll();
+    all.push(payload);
+    var ok = saveAll(all);
+    if (ok) {
+      msg.classList.remove('error');
+      msg.textContent = 'บันทึกแบบประเมินแล้ว ขอบคุณครับ';
+      resetFormFields();
+      msg.textContent = 'บันทึกแบบประเมินแล้ว ขอบคุณครับ';
+      renderResults();
+    } else {
+      msg.classList.add('error');
+      msg.textContent = 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง';
+    }
+  });
+
+  selectSite(currentSite);
+})();
+</script>
+
+</body>
+</html>
