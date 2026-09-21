@@ -236,12 +236,15 @@
   document.getElementById('evalForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var msg = document.getElementById('evalMsg');
+    var submitBtn = document.getElementById('evalSubmitBtn');
+    
     var missing = CRITERIA.filter(function (c) { return !scores[c.key]; });
     if (missing.length) {
       msg.textContent = 'กรุณาให้คะแนนครบทุกหัวข้อก่อนส่ง';
       msg.classList.add('error');
       return;
     }
+    
     var payload = {
       site: currentSite,
       name: (document.getElementById('evalName').value || '').trim().slice(0, 40) || 'ไม่ระบุชื่อ',
@@ -250,21 +253,52 @@
     };
     CRITERIA.forEach(function (c) { payload[c.key] = scores[c.key]; });
 
-    var all = loadAll();
-    all.push(payload);
-    var ok = saveAll(all);
-    if (ok) {
-      msg.classList.remove('error');
-      msg.textContent = 'บันทึกแบบประเมินแล้ว ขอบคุณครับ';
-      resetFormFields();
-      msg.textContent = 'บันทึกแบบประเมินแล้ว ขอบคุณครับ';
-      renderResults();
-    } else {
-      msg.classList.add('error');
-      msg.textContent = 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง';
-    }
-  });
+    // เปลี่ยนสถานะปุ่มเพื่อป้องกันการกดซ้ำระหว่างโหลด
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'กำลังบันทึก...';
+    msg.classList.remove('error');
+    msg.textContent = '';
 
+    // --- นำ URL Web App ของ Google Apps Script มาใส่ตรงนี้ ---
+    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzK0GFqvOznMXxdKEjAuH0_6nsIBVH1Zu1E-KAZCoOagtCNGU_sucSj4tNGu5nfptNQvw/exec';
+    
+    // ส่งข้อมูลไปที่ Google Sheet
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      // ใช้ text/plain เพื่อป้องกันปัญหา CORS Preflight ในบางเบราว์เซอร์
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (result) {
+      if (result.status === 'success') {
+        // บันทึกลง Sheet สำเร็จ ค่อยมาบันทึกลง LocalStorage เครื่องตัวเอง
+        var all = loadAll();
+        all.push(payload);
+        saveAll(all);
+
+        msg.classList.remove('error');
+        msg.textContent = 'บันทึกแบบประเมินลง Google Sheet สำเร็จ ขอบคุณครับ!';
+        resetFormFields();
+        renderResults();
+      } else {
+        throw new Error('App Script Error');
+      }
+    })
+    .catch(function (error) {
+      console.error(error);
+      msg.classList.add('error');
+      msg.textContent = 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+    })
+    .finally(function () {
+      // คืนสถานะปุ่มกลับมาเป็นปกติ
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'ส่งแบบประเมิน';
+    });
+  });
+  
   selectSite(currentSite);
 })();
 </script>
