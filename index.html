@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Puttinun — แฟ้มผลงาน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #efeee3;
+    --grid: #d6d2bd;
+    --ink: #23281f;
+    --ink-soft: #565b4e;
+    --ink-blue: #2e4a63;
+    --marker-red: #9c3b3b;
+    --card: #fbfaf3;
+    --card-border: #b9b6a4;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #1b1d16;
+      --grid: #2b2d23;
+      --ink: #ece8da;
+      --ink-soft: #b3b09e;
+      --ink-blue: #8fb2cf;
+      --marker-red: #d98787;
+      --card: #23251d;
+      --card-border: #46493a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1b1d16;
+    --grid: #2b2d23;
+    --ink: #ece8da;
+    --ink-soft: #b3b09e;
+    --ink-blue: #8fb2cf;
+    --marker-red: #d98787;
+    --card: #23251d;
+    --card-border: #46493a;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100%;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, var(--grid) 27px, var(--grid) 28px),
+      repeating-linear-gradient(90deg, transparent, transparent 27px, var(--grid) 27px, var(--grid) 28px),
+      var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Mono", monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+
+  h1, h2, h3, .headline { font-family: "Fraunces", serif; font-weight: 600; margin: 0; }
+
+  .scribble { font-family: "Caveat", cursive; }
+
+  .hidden { display: none !important; }
+  .page.entering { animation: fadeIn 0.32s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .page.entering { animation: none; }
+  }
+
+  /* ---------- COVER ---------- */
+  #page-cover {
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6vh 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .margin-note {
+    position: fixed;
+    left: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: left center;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    opacity: 0.75;
+    pointer-events: none;
+  }
+  .stamp-corner {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 0.9rem);
+    right: 1rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    text-align: right;
+    line-height: 1.5;
+  }
+  .index-card {
+    background: var(--card);
+    border: 1.5px solid var(--card-border);
+    border-radius: 3px;
+    max-width: 34rem;
+    width: 100%;
+    padding: clamp(1.75rem, 5vw, 3rem);
+    text-align: center;
+    position: relative;
+  }
+  .index-card::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 1px dashed var(--card-border);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    color: var(--ink-soft);
+    margin-bottom: 1.6rem;
+  }
+  .name-wrap {
+    position: relative;
+    display: inline-block;
+    margin: 0 auto 1.1rem;
+  }
+  .name-wrap h1 {
+    font-size: clamp(2.6rem, 9vw, 4rem);
+    line-height: 1;
+    padding: 0.35em 0.5em;
+    color: var(--ink);
+  }
+  .name-wrap svg {
+    position: absolute;
+    inset: -14% -8%;
+    width: 116%;
+    height: 128%;
+    stroke: var(--ink-blue);
+    stroke-width: 3;
+    fill: none;
+    stroke-linecap: round;
+  }
+  .cover-sub {
+    font-size: 1.35rem;
+    color: var(--ink-soft);
+    margin: 0 0 2.1rem;
+  }
+  .open-btn {
+    appearance: none;
+    border: 1.5px solid var(--ink-blue);
+    background: transparent;
+    color: var(--ink-blue);
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    padding: 0.85em 1.6em;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .open-btn:hover, .open-btn:focus-visible {
+    background: var(--ink-blue);
+    color: var(--card);
+  }
+  .open-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .open-btn:focus-visible { outline: 2px solid var(--marker-red); outline-offset: 3px; }
+
+  /* ---------- SHARED PAGE SHELL (archive + eval) ---------- */
+  .page-shell {
+    min-height: 100svh;
+    padding: calc(env(safe-area-inset-top,0px) + 2.2rem) 1.25rem calc(env(safe-area-inset-bottom,0px) + 3rem);
+    max-width: 68rem;
+    margin: 0 auto;
+  }
+  .top-nav {
+    display: flex;
+    gap: 1.1rem;
+    margin-bottom: 1.1rem;
+    flex-wrap: wrap;
+  }
+  .nav-link {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding-bottom: 2px;
+    border-bottom: 1px solid transparent;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-family: "IBM Plex Mono", monospace;
+    cursor: pointer;
+  }
+  .nav-link:hover { color: var(--marker-red); border-color: var(--marker-red); }
+
+  .archive-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1.5px solid var(--card-border);
+    padding-bottom: 1.4rem;
+    margin-bottom: 1.6rem;
+  }
+  .archive-top h2 { font-size: clamp(2rem, 6vw, 2.8rem); }
+  .archive-top .sub { color: var(--ink-soft); font-size: 0.82rem; margin-top: 0.4rem; max-width: 34rem; }
+
+  .journey {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    margin-bottom: 2.2rem;
+  }
+  .journey svg { flex: none; }
+  .journey span.current { color: var(--marker-red); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+    gap: 1.1rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1.5px solid var(--card-border);
+    border-radius: 3px;
+    padding: 1.3rem 1.3rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .card:hover, .card:focus-within { border-color: var(--marker-red); transform: translateY(-3px); }
+  .card-no {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    margin-bottom: 0.7rem;
+  }
+  .card h3 {
+    font-size: 1.35rem;
+    margin: 0 0 0.15rem;
+    position: relative;
+    display: inline-block;
+  }
+  .card h3 svg {
+    position: absolute;
+    left: -2%;
+    right: -2%;
+    bottom: -0.28em;
+    width: 104%;
+    height: 0.5em;
+    stroke: var(--marker-red);
+    stroke-width: 2.5;
+    fill: none;
+    stroke-linecap: round;
+  }
+  .card p {
+    font-size: 0.86rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin: 0.9rem 0 1.1rem;
+    flex: 1;
+  }
+  .card-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.6rem 1rem;
+  }
+  .card a.open-site {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--ink-blue);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    white-space: nowrap;
+  }
+  .card a.open-site:hover { color: var(--marker-red); }
+  .card a.open-site svg { width: 0.9em; height: 0.9em; }
+  .eval-link {
+    font-size: 0.72rem;
+    color: var(--marker-red);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--marker-red);
+    padding-bottom: 1px;
+    white-space: nowrap;
+    background: none; border: none; border-bottom: 1px dashed var(--marker-red);
+    font-family: "IBM Plex Mono", monospace;
+    cursor: pointer;
+    padding-left: 0; padding-right: 0;
+  }
+  .eval-link:hover { color: var(--ink-blue); border-color: var(--ink-blue); }
+
+  .archive-foot {
+    margin-top: 2.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    color: var(--ink-soft);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+  }
+  .ok-stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--marker-red);
+    border: 1.5px solid var(--marker-red);
+    border-radius: 999px;
+    padding: 0.3em 0.8em 0.3em 0.6em;
+    transform: rotate(-4deg);
+  }
+
+  /* ---------- EVALUATION PAGE ---------- */
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-bottom: 1.8rem;
+  }
+  .tab {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    padding: 0.6em 0.95em;
+    border: 1.5px solid var(--card-border);
+    border-radius: 2px;
+    background: var(--card);
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .tab:hover { border-color: var(--marker-red); color: var(--marker-red); }
+  .tab.active { border-color: var(--ink-blue); color: var(--ink-blue); }
+
+  .eval-body {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 1.8rem;
+    align-items: start;
+  }
+  @media (max-width: 44rem) {
+    .eval-body { grid-template-columns: 1fr; }
+  }
+
+  .eval-site-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    font-size: 1.25rem;
+    border-bottom: 1.5px solid var(--card-border);
+    padding-bottom: 0.7rem;
+    margin-bottom: 1.2rem;
+  }
+  .eval-site-info a {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--ink-blue);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .eval-site-info a:hover { color: var(--marker-red); }
+
+  .field { display: block; margin-bottom: 1.15rem; font-size: 0.82rem; }
+  .field > span { display: block; margin-bottom: 0.4rem; color: var(--ink-soft); }
+  .field input, .field textarea {
+    width: 100%;
+    font-family: inherit;
+    font-size: 0.88rem;
+    padding: 0.6em 0.7em;
+    border: 1.5px solid var(--card-border);
+    border-radius: 2px;
+    background: var(--card);
+    color: var(--ink);
+    resize: vertical;
+  }
+  .field input:focus, .field textarea:focus { outline: 2px solid var(--marker-red); outline-offset: 2px; }
+
+  .rubric-row { margin-bottom: 1.05rem; }
+  .rubric-label { display: block; font-size: 0.8rem; color: var(--ink-soft); margin-bottom: 0.5rem; }
+  .rating { display: flex; gap: 0.5rem; }
+  .rate-btn {
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: 50%;
+    border: 1.5px solid var(--card-border);
+    background: var(--card);
+    color: var(--ink-soft);
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600;
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+  .rate-btn:hover { border-color: var(--ink-blue); color: var(--ink-blue); }
+  .rate-btn:focus-visible { outline: 2px solid var(--marker-red); outline-offset: 2px; }
+  .rate-btn.selected { border-color: var(--marker-red); background: var(--marker-red); color: var(--card); }
+
+  .eval-msg { margin-top: 0.85rem; font-size: 0.78rem; color: var(--ink-soft); min-height: 1.1em; }
+  .eval-msg.error { color: var(--marker-red); }
+
+  .results {
+    border: 1.5px solid var(--card-border);
+    border-radius: 3px;
+    padding: 1.25rem 1.35rem;
+    background: var(--card);
+  }
+  .results-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.1rem; gap: 0.6rem; flex-wrap: wrap; }
+  .results-head h3 { font-size: 1.05rem; }
+  .results-head span { font-size: 0.75rem; color: var(--ink-soft); }
+  .score-row { margin-bottom: 0.8rem; }
+  .score-row-top { display: flex; justify-content: space-between; gap: 0.6rem; font-size: 0.78rem; color: var(--ink-soft); margin-bottom: 0.3rem; }
+  .score-bar { height: 6px; background: var(--grid); border-radius: 99px; overflow: hidden; }
+  .score-bar > i { display: block; height: 100%; background: var(--ink-blue); }
+  .comment-list { margin-top: 1.3rem; border-top: 1px dashed var(--card-border); padding-top: 1rem; max-height: 17rem; overflow-y: auto; }
+  .comment-item { margin-bottom: 0.9rem; font-size: 0.8rem; }
+  .comment-item .who { color: var(--ink-soft); font-size: 0.7rem; letter-spacing: 0.04em; margin-bottom: 0.2rem; }
+  .comment-item p { margin: 0; line-height: 1.5; }
+  .no-comments { color: var(--ink-soft); font-size: 0.8rem; margin: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card, .open-btn { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="page-cover" class="page">
+  <div class="margin-note scribble">ความรู้ → ทักษะ → การออกแบบ</div>
+  <div class="stamp-corner">บันทึกภาคสนาม<br>เลขที่ 0001</div>
+
+  <div class="index-card">
+    <div class="eyebrow">ผู้สร้างผลงานต่อไปนี้</div>
+    <div class="name-wrap">
+      <h1>Puttinun</h1>
+      <svg viewBox="0 0 300 130" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M18,58 C14,24 60,10 150,9 C244,8 288,22 284,58 C280,100 232,120 150,121 C64,122 22,102 18,58 Z" />
+      </svg>
+    </div>
+    <p class="cover-sub scribble">บันทึกการทำงานของห้าสิ่งที่ผมสร้างขึ้น</p>
+    <button class="open-btn" id="openArchiveBtn" type="button">เปิดแฟ้มผลงาน</button>
+  </div>
+</div>
+
+<div id="page-archive" class="page page-shell hidden">
+  <div class="top-nav">
+    <a href="#" class="nav-link" data-nav="cover">← หน้าปก</a>
+    <a href="#" class="nav-link" data-nav="eval">แบบประเมิน →</a>
+  </div>
+  <div class="archive-top">
+    <div>
+      <h2>แฟ้มผลงาน</h2>
+      <div class="sub">ผลงานห้าชิ้น จัดเก็บเป็นรายการและปล่อยออกสู่โลกจริง</div>
+    </div>
+  </div>
+
+  <div class="journey" aria-hidden="true">
+    <span>ทักษะ</span>
+    <svg width="26" height="10" viewBox="0 0 26 10"><path d="M1,5 C10,2 16,8 25,5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+    <span>ออกแบบ</span>
+    <svg width="26" height="10" viewBox="0 0 26 10"><path d="M1,5 C10,2 16,8 25,5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+    <span class="current">เผยแพร่แล้ว</span>
+  </div>
+
+  <div class="grid">
+
+    <article class="card">
+      <div class="card-no">UI-01</div>
+      <h3>WokTheHack
+        <svg viewBox="0 0 120 14" preserveAspectRatio="none" aria-hidden="true"><path d="M2,8 C30,3 60,11 88,6 C100,4 108,7 118,5"/></svg>
+      </h3>
+      <p>เปลี่ยนเมนูตามสั่งริมทางให้ล้ำกว่าเดิม ปรับแต่งวัตถุดิบและโภชนาการได้ตามใจคุณ</p>
+      <div class="card-actions">
+        <a class="open-site" href="https://kriangkri-code.github.io/WokTheHack/" target="_blank" rel="noopener">
+          เปิดเว็บไซต์
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 L12 4 M6 4 H12 V10" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <button type="button" class="eval-link" data-site="ui01">ทำแบบประเมิน</button>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-no">UI-02</div>
+      <h3>Open House
+        <svg viewBox="0 0 120 14" preserveAspectRatio="none" aria-hidden="true"><path d="M2,8 C30,3 60,11 88,6 C100,4 108,7 118,5"/></svg>
+      </h3>
+      <p>หน้าแลนดิ้งเพจต้อนรับงานเปิดบ้าน (Open House) — หน้าแรกที่ผู้มาเยือนจะเห็นก่อนตัดสินใจเดินดูรอบๆ</p>
+      <div class="card-actions">
+        <a class="open-site" href="https://kriangkri-code.github.io/openhouse/" target="_blank" rel="noopener">
+          เปิดเว็บไซต์
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 L12 4 M6 4 H12 V10" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <button type="button" class="eval-link" data-site="ui02">ทำแบบประเมิน</button>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-no">UI-03</div>
+      <h3>A Collection of Design Websites
+        <svg viewBox="0 0 120 14" preserveAspectRatio="none" aria-hidden="true"><path d="M2,8 C30,3 60,11 88,6 C100,4 108,7 118,5"/></svg>
+      </h3>
+      <p>คลังรวมเว็บไซต์ด้านดีไซน์ที่น่าศึกษา เก็บไว้ในที่เดียวเพื่อให้กลับมาหยิบใช้ได้อีก</p>
+      <div class="card-actions">
+        <a class="open-site" href="https://kriangkri-code.github.io/a-collection-of-design-websites/" target="_blank" rel="noopener">
+          เปิดเว็บไซต์
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 L12 4 M6 4 H12 V10" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <button type="button" class="eval-link" data-site="ui03">ทำแบบประเมิน</button>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-no">UI-04</div>
+      <h3>Hotel Booking Webapp
+        <svg viewBox="0 0 120 14" preserveAspectRatio="none" aria-hidden="true"><path d="M2,8 C30,3 60,11 88,6 C100,4 108,7 118,5"/></svg>
+      </h3>
+      <p>ระบบจองห้องพักที่ใช้งานได้จริง ตั้งแต่ค้นหาวันว่าง เลือกห้อง ไปจนถึงยืนยันการจอง</p>
+      <div class="card-actions">
+        <a class="open-site" href="https://kriangkri-code.github.io/Hotel-Booking-Webapp/" target="_blank" rel="noopener">
+          เปิดเว็บไซต์
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 L12 4 M6 4 H12 V10" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <button type="button" class="eval-link" data-site="ui04">ทำแบบประเมิน</button>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-no">UI-05</div>
+      <h3>Galactic Defense
+        <svg viewBox="0 0 120 14" preserveAspectRatio="none" aria-hidden="true"><path d="M2,8 C30,3 60,11 88,6 C100,4 108,7 118,5"/></svg>
+      </h3>
+      <p>เกมยิงยานอวกาศสไตล์อาร์เคด สร้างขึ้นเพื่อความสนุกล้วนๆ ในการยิงพิกเซลให้ระเบิด</p>
+      <div class="card-actions">
+        <a class="open-site" href="https://kriangkri-code.github.io/GALACTIC-DEFENSE/" target="_blank" rel="noopener">
+          เปิดเว็บไซต์
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 L12 4 M6 4 H12 V10" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <button type="button" class="eval-link" data-site="ui05">ทำแบบประเมิน</button>
+      </div>
+    </article>
+
+  </div>
+
+  <div class="archive-foot">
+    <span>รายการนี้จัดทำโดย Puttinun · UI เทียบกับ UX, ดีไซน์เทียบกับธุรกิจ ในห้าผลงาน</span>
+    <span class="ok-stamp">✓ OK</span>
+  </div>
+</div>
+
+<div id="page-eval" class="page page-shell hidden">
+  <div class="top-nav">
+    <a href="#" class="nav-link" data-nav="cover">← หน้าปก</a>
+    <a href="#" class="nav-link" data-nav="archive">← แฟ้มผลงาน</a>
+  </div>
+  <div class="archive-top">
+    <div>
+      <h2>บันทึกการประเมิน</h2>
+      <div class="sub">ให้เพื่อนช่วยประเมินแต่ละเว็บ — คะแนนและความเห็นเก็บรวมกันไว้ที่นี่แบบเรียลไทม์</div>
+    </div>
+  </div>
+
+  <div class="tabs" id="evalTabs"></div>
+
+  <div class="eval-body">
+    <div>
+      <div class="eval-site-info">
+        <span id="evalSiteName">—</span>
+        <a id="evalSiteLink" href="#" target="_blank" rel="noopener">เปิดเว็บนี้ ↗</a>
+      </div>
+
+      <form id="evalForm">
+        <label class="field">
+          <span>ชื่อผู้ประเมิน (ไม่ระบุก็ได้)</span>
+          <input type="text" id="evalName" placeholder="เช่น เพื่อนในกลุ่ม Line" maxlength="40">
+        </label>
+
+        <div id="rubric"></div>
+
+        <label class="field">
+          <span>ความคิดเห็นเพิ่มเติม</span>
+          <textarea id="evalComment" rows="3" maxlength="300" placeholder="สิ่งที่ชอบ / สิ่งที่ควรปรับปรุง"></textarea>
+        </label>
+
+        <button type="submit" class="open-btn" id="evalSubmitBtn">ส่งแบบประเมิน</button>
+        <div class="eval-msg" id="evalMsg" aria-live="polite"></div>
+      </form>
+    </div>
+
+    <div class="results">
+      <div class="results-head">
+        <h3>ผลรวม</h3>
+        <span id="evalCount">0 คนประเมินแล้ว</span>
+      </div>
+      <div id="scoreRows"></div>
+      <div class="comment-list" id="commentList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var pages = {
+    cover: document.getElementById('page-cover'),
+    archive: document.getElementById('page-archive'),
+    eval: document.getElementById('page-eval')
+  };
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function showPage(name) {
+    Object.keys(pages).forEach(function (key) {
+      var el = pages[key];
+      if (key === name) {
+        el.classList.remove('hidden');
+        el.classList.remove('entering');
+        if (!reduced) { void el.offsetWidth; el.classList.add('entering'); }
+      } else {
+        el.classList.add('hidden');
+        el.classList.remove('entering');
+      }
+    });
+    window.scrollTo(0, 0);
+  }
+
+  document.getElementById('openArchiveBtn').addEventListener('click', function () { showPage('archive'); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-nav]'), function (el) {
+    el.addEventListener('click', function (e) { e.preventDefault(); showPage(el.getAttribute('data-nav')); });
+  });
+
+  /* ---------------- Evaluation feature ---------------- */
+  var SITES = [
+    { id: 'ui01', code: 'UI-01', name: 'WokTheHack', url: 'https://kriangkri-code.github.io/WokTheHack/' },
+    { id: 'ui02', code: 'UI-02', name: 'Open House', url: 'https://kriangkri-code.github.io/openhouse/' },
+    { id: 'ui03', code: 'UI-03', name: 'A Collection of Design Websites', url: 'https://kriangkri-code.github.io/a-collection-of-design-websites/' },
+    { id: 'ui04', code: 'UI-04', name: 'Hotel Booking Webapp', url: 'https://kriangkri-code.github.io/Hotel-Booking-Webapp/' },
+    { id: 'ui05', code: 'UI-05', name: 'Galactic Defense', url: 'https://kriangkri-code.github.io/GALACTIC-DEFENSE/' }
+  ];
+  var CRITERIA = [
+    { key: 'ui', label: 'UI — หน้าตา/การออกแบบ' },
+    { key: 'ux', label: 'UX — ใช้งานง่ายแค่ไหน' },
+    { key: 'content', label: 'เนื้อหา / ความชัดเจน' },
+    { key: 'overall', label: 'ความประทับใจโดยรวม' }
+  ];
+
+  var currentSite = SITES[0].id;
+  var scores = {};
+  var db = null;
+  var unsubscribe = null;
+
+  var tabsEl = document.getElementById('evalTabs');
+  SITES.forEach(function (site) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tab';
+    b.dataset.site = site.id;
+    b.textContent = site.code + ' · ' + site.name;
+    tabsEl.appendChild(b);
+  });
+  tabsEl.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('.tab') : null;
+    if (btn) selectSite(btn.dataset.site);
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('.eval-link'), function (el) {
+    el.addEventListener('click', function () {
+      showPage('eval');
+      selectSite(el.getAttribute('data-site'));
+    });
+  });
+
+  var rubricEl = document.getElementById('rubric');
+  CRITERIA.forEach(function (crit) {
+    var row = document.createElement('div');
+    row.className = 'rubric-row';
+    row.dataset.key = crit.key;
+
+    var label = document.createElement('span');
+    label.className = 'rubric-label';
+    label.textContent = crit.label;
+
+    var rating = document.createElement('div');
+    rating.className = 'rating';
+    rating.setAttribute('role', 'radiogroup');
+    rating.setAttribute('aria-label', crit.label);
+
+    for (var v = 1; v <= 5; v++) {
+      (function (val) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'rate-btn';
+        btn.dataset.val = val;
+        btn.textContent = val;
+        btn.setAttribute('aria-pressed', 'false');
+        btn.addEventListener('click', function () {
+          scores[crit.key] = val;
+          Array.prototype.forEach.call(rating.querySelectorAll('.rate-btn'), function (b2) {
+            var sel = Number(b2.dataset.val) === val;
+            b2.classList.toggle('selected', sel);
+            b2.setAttribute('aria-pressed', sel ? 'true' : 'false');
+          });
+        });
+        rating.appendChild(btn);
+      })(v);
+    }
+
+    row.appendChild(label);
+    row.appendChild(rating);
+    rubricEl.appendChild(row);
+  });
+
+  function resetFormFields() {
+    scores = {};
+    Array.prototype.forEach.call(document.querySelectorAll('.rate-btn'), function (b) {
+      b.classList.remove('selected');
+      b.setAttribute('aria-pressed', 'false');
+    });
+    document.getElementById('evalComment').value = '';
+    var msg = document.getElementById('evalMsg');
+    msg.textContent = '';
+    msg.classList.remove('error');
+  }
+
+  function selectSite(id) {
+    var site = SITES.filter(function (s) { return s.id === id; })[0] || SITES[0];
+    currentSite = site.id;
+    document.getElementById('evalSiteName').textContent = site.code + ' · ' + site.name;
+    document.getElementById('evalSiteLink').href = site.url;
+    Array.prototype.forEach.call(tabsEl.querySelectorAll('.tab'), function (t) {
+      t.classList.toggle('active', t.dataset.site === site.id);
+    });
+    resetFormFields();
+    subscribeResults(site.id);
+  }
+
+  function subscribeResults(siteId) {
+    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+    var countEl = document.getElementById('evalCount');
+    var rowsEl = document.getElementById('scoreRows');
+    var listEl = document.getElementById('commentList');
+    if (!db) {
+      countEl.textContent = 'กำลังเชื่อมต่อ...';
+      rowsEl.innerHTML = '';
+      listEl.innerHTML = '';
+      return;
+    }
+    var q = db.collection('evaluations').where('site', '==', siteId).orderBy('createdAt', 'desc').limit(50);
+    unsubscribe = q.onSnapshot(function (snap) { renderResults(snap); }, function () {
+      countEl.textContent = 'โหลดผลไม่สำเร็จ ลองรีเฟรชหน้านี้';
+    });
+  }
+
+  function renderResults(snap) {
+    var docs = snap.docs.map(function (d) { return d.data() || {}; });
+    document.getElementById('evalCount').textContent = docs.length + ' คนประเมินแล้ว';
+
+    var rowsEl = document.getElementById('scoreRows');
+    rowsEl.innerHTML = '';
+    CRITERIA.forEach(function (c) {
+      var vals = docs.map(function (d) { return Number(d[c.key]); }).filter(function (n) { return !isNaN(n) && n > 0; });
+      var avg = vals.length ? (vals.reduce(function (a, b) { return a + b; }, 0) / vals.length) : 0;
+      var row = document.createElement('div');
+      row.className = 'score-row';
+      var top = document.createElement('div');
+      top.className = 'score-row-top';
+      var s1 = document.createElement('span'); s1.textContent = c.label;
+      var s2 = document.createElement('span'); s2.textContent = vals.length ? (avg.toFixed(1) + ' / 5') : '—';
+      top.appendChild(s1); top.appendChild(s2);
+      var bar = document.createElement('div');
+      bar.className = 'score-bar';
+      var fill = document.createElement('i');
+      fill.style.width = ((avg / 5) * 100) + '%';
+      bar.appendChild(fill);
+      row.appendChild(top);
+      row.appendChild(bar);
+      rowsEl.appendChild(row);
+    });
+
+    var listEl = document.getElementById('commentList');
+    listEl.innerHTML = '';
+    var withComments = docs.filter(function (d) { return d.comment && String(d.comment).trim(); });
+    if (!withComments.length) {
+      var p0 = document.createElement('p');
+      p0.className = 'no-comments';
+      p0.textContent = 'ยังไม่มีความคิดเห็น';
+      listEl.appendChild(p0);
+    } else {
+      withComments.forEach(function (d) {
+        var item = document.createElement('div');
+        item.className = 'comment-item';
+        var who = document.createElement('div');
+        who.className = 'who';
+        who.textContent = d.name || 'ไม่ระบุชื่อ';
+        var p = document.createElement('p');
+        p.textContent = d.comment;
+        item.appendChild(who);
+        item.appendChild(p);
+        listEl.appendChild(item);
+      });
+    }
+  }
+
+  document.getElementById('evalForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var msg = document.getElementById('evalMsg');
+    if (!db) {
+      msg.textContent = 'ระบบเก็บผลประเมินยังไม่พร้อมใช้งานในหน้านี้ ลองเปิดใหม่อีกครั้ง';
+      msg.classList.add('error');
+      return;
+    }
+    var missing = CRITERIA.filter(function (c) { return !scores[c.key]; });
+    if (missing.length) {
+      msg.textContent = 'กรุณาให้คะแนนครบทุกหัวข้อก่อนส่ง';
+      msg.classList.add('error');
+      return;
+    }
+    var submitBtn = document.getElementById('evalSubmitBtn');
+    submitBtn.disabled = true;
+    var payload = {
+      site: currentSite,
+      name: (document.getElementById('evalName').value || '').trim().slice(0, 40) || 'ไม่ระบุชื่อ',
+      comment: (document.getElementById('evalComment').value || '').trim().slice(0, 300),
+      createdAt: Date.now()
+    };
+    CRITERIA.forEach(function (c) { payload[c.key] = scores[c.key]; });
+    db.collection('evaluations').add(payload).then(function () {
+      msg.classList.remove('error');
+      msg.textContent = 'บันทึกแบบประเมินแล้ว ขอบคุณครับ';
+      resetFormFields();
+      msg.textContent = 'บันทึกแบบประเมินแล้ว ขอบคุณครับ';
+    }).catch(function (err) {
+      msg.classList.add('error');
+      msg.textContent = 'ส่งไม่สำเร็จ (' + ((err && err.code) || 'error') + ') ลองใหม่อีกครั้ง';
+    }).then(function () {
+      submitBtn.disabled = false;
+    });
+  });
+
+  selectSite(SITES[0].id);
+
+  (function initDb() {
+    if (!(window.claude && window.claude.use)) return;
+    window.claude.use('db').then(function (ns) {
+      db = ns;
+      subscribeResults(currentSite);
+    }).catch(function () { db = null; });
+  })();
+})();
+</script>
+
+</body>
+</html>
