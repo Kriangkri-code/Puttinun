@@ -236,9 +236,9 @@
   document.getElementById('evalForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var msg = document.getElementById('evalMsg');
-    var submitBtn = document.getElementById('evalSubmitBtn');
-    
+    var submitBtn = document.getElementById('evalSubmitBtn'); // เพิ่มตัวแปรปุ่มกด
     var missing = CRITERIA.filter(function (c) { return !scores[c.key]; });
+    
     if (missing.length) {
       msg.textContent = 'กรุณาให้คะแนนครบทุกหัวข้อก่อนส่ง';
       msg.classList.add('error');
@@ -253,52 +253,48 @@
     };
     CRITERIA.forEach(function (c) { payload[c.key] = scores[c.key]; });
 
-    // เปลี่ยนสถานะปุ่มเพื่อป้องกันการกดซ้ำระหว่างโหลด
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'กำลังบันทึก...';
-    msg.classList.remove('error');
-    msg.textContent = '';
+    // 1. บันทึกลง LocalStorage (เครื่องตัวเอง) แบบเดิม
+    var all = loadAll();
+    all.push(payload);
+    saveAll(all);
 
-    // --- นำ URL Web App ของ Google Apps Script มาใส่ตรงนี้ ---
-    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzK0GFqvOznMXxdKEjAuH0_6nsIBVH1Zu1E-KAZCoOagtCNGU_sucSj4tNGu5nfptNQvw/exec';
-    
-    // ส่งข้อมูลไปที่ Google Sheet
-    fetch(SCRIPT_URL, {
+    // 2. แสดงสถานะกำลังโหลด
+    msg.classList.remove('error');
+    msg.textContent = 'กำลังส่งข้อมูล...';
+    submitBtn.disabled = true; // ป้องกันการกดซ้ำ
+    submitBtn.textContent = 'กำลังส่ง...';
+
+    // นำ URL ที่คัดลอกจาก Google Apps Script มาวางที่นี่!
+    var GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzK0GFqvOznMXxdKEjAuH0_6nsIBVH1Zu1E-KAZCoOagtCNGU_sucSj4tNGu5nfptNQvw/exec';
+
+    // 3. ส่งข้อมูลไปที่ Google Sheet ผ่าน Fetch API
+    fetch(GOOGLE_SCRIPT_URL, {
       method: 'POST',
-      // ใช้ text/plain เพื่อป้องกันปัญหา CORS Preflight ในบางเบราว์เซอร์
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      // ใช้ text/plain เพื่อเลี่ยงปัญหา CORS Preflight เวลาส่งข้อมูลข้ามโดเมน
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
       body: JSON.stringify(payload)
     })
-    .then(function (response) {
-      return response.json();
+    .then(function(response) {
+      msg.classList.remove('error');
+      msg.textContent = 'บันทึกแบบประเมินลง Google Sheet แล้ว ขอบคุณครับ';
+      resetFormFields();
+      renderResults(); // อัปเดตผลรวมในหน้าเว็บ
     })
-    .then(function (result) {
-      if (result.status === 'success') {
-        // บันทึกลง Sheet สำเร็จ ค่อยมาบันทึกลง LocalStorage เครื่องตัวเอง
-        var all = loadAll();
-        all.push(payload);
-        saveAll(all);
-
-        msg.classList.remove('error');
-        msg.textContent = 'บันทึกแบบประเมินลง Google Sheet สำเร็จ ขอบคุณครับ!';
-        resetFormFields();
-        renderResults();
-      } else {
-        throw new Error('App Script Error');
-      }
-    })
-    .catch(function (error) {
-      console.error(error);
+    .catch(function(error) {
+      // กรณีเน็ตหลุดหรือส่งไม่สำเร็จ
+      console.error('Error:', error);
       msg.classList.add('error');
-      msg.textContent = 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+      msg.textContent = 'บันทึกลงเครื่องแล้ว แต่ส่งเข้าส่วนกลางไม่สำเร็จ (โปรดลองใหม่)';
     })
-    .finally(function () {
-      // คืนสถานะปุ่มกลับมาเป็นปกติ
+    .finally(function() {
+      // คืนสถานะปุ่มกดกลับมา
       submitBtn.disabled = false;
       submitBtn.textContent = 'ส่งแบบประเมิน';
     });
   });
-  
+
   selectSite(currentSite);
 })();
 </script>
